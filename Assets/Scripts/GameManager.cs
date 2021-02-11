@@ -27,6 +27,9 @@ public class GameManager : MonoBehaviour
 
         CreateTilesFromState();
         AdjustCameraToLevel();
+
+        if (!m_enablePlayerControls)
+            StartCoroutine(RunSolver());
     }
 
     private void LoadLevels()
@@ -104,6 +107,8 @@ public class GameManager : MonoBehaviour
                 action = GameState.Action.Right;
             else if (Input.GetKeyDown(KeyCode.R))
                 StartCoroutine(RestartLevel());
+            else if (Input.GetKeyDown(KeyCode.P))
+                ScreenCapture.CaptureScreenshot(Application.dataPath + "/../screenshots/" + System.DateTime.Now.ToString("yyyy-MM-dd HH-mm-ss") + ".png");
 
             if (action != GameState.Action.None)
             {
@@ -119,6 +124,36 @@ public class GameManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    private IEnumerator RunSolver()
+    {
+        yield return null;
+
+        var actions = Solver.Solve(m_currentState);
+
+        foreach(var action in actions)
+        {
+            if (m_currentState.DoAction(action))
+            {
+                AnimateAction(action);
+                yield return new WaitForSeconds(0.15f);
+            }
+            else
+            {
+                throw new System.InvalidOperationException($"Action {action} is not valid in the current state");
+            }
+        }
+
+        //if (m_currentState.IsSolved)
+        {
+            m_levelNumber++;
+            StartCoroutine(RestartLevel());
+        }
+        /*else
+        {
+            m_enablePlayerControls = true;
+        }*/
     }
 
     private void AnimateAction(GameState.Action action)
@@ -164,5 +199,9 @@ public class GameManager : MonoBehaviour
 
         CreateTilesFromState();
         AdjustCameraToLevel();
+
+        if (!m_enablePlayerControls)
+            StartCoroutine(RunSolver());
+
     }
 }

@@ -234,7 +234,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_levelText: {fileID: 4900000, guid: b1d51d5ca1f59b04fac2cfdca17907ee, type: 3}
-  m_levelNumber: 5
+  m_levelNumber: 0
   m_tileWall: {fileID: 8855012442996764601, guid: 1a8d086bfff76b84baea946e8cd55313,
     type: 3}
   m_tilePlayer: {fileID: 6621203132637945630, guid: af111a545f9768d4280ef2778cb61dd9,
@@ -243,7 +243,7 @@ MonoBehaviour:
     type: 3}
   m_tileGoal: {fileID: 1053148935066882198, guid: 1185dbbdd6497474f85677d36aba7a40,
     type: 3}
-  m_enablePlayerControls: 1
+  m_enablePlayerControls: 0
 --- !u!4 &1238031585
 Transform:
   m_ObjectHideFlags: 0
