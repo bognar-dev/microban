@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,19 @@ public static class Solver
 {
     class Node
     {
+        public Node(Node parent, GameState.Action incomingAction, GameState state)
+        {
+            this.parent = parent;
+            this.incomingAction = incomingAction;
+            this.state = state;
+        }
+        public Node(GameState state)
+        {
+            this.state = state;
+        }
         public Node parent;
         public GameState.Action incomingAction;
-        public GameState state; 
+        public GameState state;
     }
 
     static List<GameState.Action> allActions = new List<GameState.Action>{
@@ -22,19 +33,58 @@ public static class Solver
     {
         System.Diagnostics.Stopwatch stopwatch = System.Diagnostics.Stopwatch.StartNew();
 
-        // TODO: implement your solver!
-
-        // TIP: your solver WILL sometimes take a very long time to run, and will lock up the Unity editor.
-        // This will be annoying when you have to go into Task Manager and kill the Unity process.
-        // To help mitigate this, put the following code somewhere in the main loop of your solver:
-        if (stopwatch.Elapsed.Seconds > 10)
+        HashSet<GameState> seenNodes = new HashSet<GameState>();
+        Node root = new Node(state);
+        Queue<Node> q = new Queue<Node>();
+        q.Enqueue(root);
+        while (q.Count != 0)
         {
-            Debug.LogError("Solver timed out");
-            return new List<GameState.Action>();
-        }
-        // This will kill the solver if it takes longer than 10 seconds, and the game will skip the level and move on to the next.
+            if (stopwatch.Elapsed.Seconds > 10)
+            {
+                Debug.LogError("Solver timed out");
+                return new List<GameState.Action>();
+            }
+            Node currentNode = q.Dequeue();
+            List<GameState.Action> availableActions = new List<GameState.Action>();
+            foreach (GameState.Action a in allActions)
+            {
+                if (currentNode.state.IsActionAvailable(a))
+                {
 
-        // Placeholder
+                    availableActions.Add(a);
+                }
+            }
+            foreach (GameState.Action a in availableActions)
+            {
+                GameState nextState = currentNode.state.Copy();
+                nextState.DoAction(a);
+                Node child = new Node(currentNode, a, nextState);
+                if (nextState.IsSolved)
+                {
+                    return ReconstructPlan(child);
+                }
+                if (!seenNodes.Contains(nextState))
+                {
+                    seenNodes.Add(nextState);
+                    q.Enqueue(child);
+                }
+            }
+
+        }
+
         return new List<GameState.Action>();
+    }
+
+    private static List<GameState.Action> ReconstructPlan(Node node)
+    {
+        List<GameState.Action> plan = new List<GameState.Action>();
+        while (node != null)
+        {
+            plan.Insert(0, node.incomingAction);
+            node = node.parent;
+        }
+
+
+        return plan;
     }
 }
